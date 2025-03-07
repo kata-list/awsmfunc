@@ -15,7 +15,7 @@ from .types.misc import ST2084_PEAK_LUMINANCE, Hdr10PlusHistogram, st2084_eotf, 
 from .types.placebo import PlaceboTonemapOpts
 
 SUBTITLE_DEFAULT_STYLE: str = (
-    "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000," "0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1"
+    "sans-serif,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,7,10,10,10,1"
 )
 
 
@@ -886,6 +886,7 @@ def ScreenGen(
     clip: Union[vs.VideoNode, List[vs.VideoNode]],
     folder: Union[str, PathLike],
     suffix: Optional[Union[str, List[str]]] = None,
+    filename_callback: Optional[Callable[[str, str], str]] = None,
     prefix: Union[ScreenGenPrefix, str] = ScreenGenPrefix.Sequential,
     frame_numbers: Union[Union[str, PathLike], List[int]] = "screens.txt",
     start: int = 1,
@@ -980,7 +981,10 @@ def ScreenGen(
             rgb_clip = clip.resize.Spline36(format=vs.RGB24, matrix_in_s="709", dither_type="error_diffusion")
 
             for i, num in enumerate(screens, start=start):
-                if prefix == ScreenGenPrefix.Sequential:
+                if filename_callback is not None:
+                    target_str = filename_callback(num, suffix)
+                    filename = f"{target_str}.png"
+                elif prefix == ScreenGenPrefix.Sequential:
                     filename = f"{i:02d}{suffix}.png"
                 elif prefix == ScreenGenPrefix.FrameNo:
                     filename = f"{num}{suffix}.png"
